@@ -33,12 +33,12 @@
 ### 🐧 Debian / Ubuntu / Kali Linux
 
 ```bash
-sudo apt update && sudo apt install -y wget && wget -qO- https://raw.githubusercontent.com/povzayd/Burpsuite-Professional/main/install.sh | sudo bash
+sudo apt update && sudo apt install -y wget && wget -qO- https://github.com/Spydomain/burpsuite-pro/main/install.sh | sudo bash
 ```
 
 Or clone & run:
 ```bash
-git clone https://github.com/povzayd/Burpsuite-Professional.git Spydomain
+git clone https://github.com/Spydomain/burpsuite-pro Spydomain
 cd Spydomain
 chmod +x install.sh
 sudo ./install.sh
@@ -47,7 +47,7 @@ sudo ./install.sh
 ### 🔷 Arch Linux / CachyOS / Manjaro (Wayland)
 
 ```bash
-git clone https://github.com/povzayd/Burpsuite-Professional.git Spydomain
+git clone https://github.com/Spydomain/burpsuite-pro Spydomain
 cd Spydomain
 chmod +x install_arch.sh
 ./install_arch.sh
@@ -65,7 +65,7 @@ brew install git openjdk@21
 
 **Step 2:** Run the installer:
 ```bash
-git clone https://github.com/povzayd/Burpsuite-Professional.git Spydomain
+git clone https://github.com/Spydomain/burpsuite-pro Spydomain
 cd Spydomain
 chmod +x install_macos.sh
 ./install_macos.sh
@@ -128,7 +128,7 @@ chmod +x update.sh && ./update.sh
 
 Or one-liner:
 ```bash
-wget -qO- https://raw.githubusercontent.com/povzayd/Burpsuite-Professional/main/update.sh | sudo bash
+wget -qO- https://github.com/Spydomain/burpsuite-pro/main/update.sh | sudo bash
 ```
 
 ---
@@ -299,7 +299,7 @@ With `home.packages` (home-manager):
 |-----------|--------|
 | Loader.jar | [h3110w0r1d-y](https://github.com/h3110w0r1d-y/BurpLoaderKeygen) |
 | Original Script | [cyb3rzest](https://github.com/cyb3rzest/Burp-Suite-Pro) |
-| Spydomain | [povzayd](https://github.com/povzayd) |
+| Spydomain | [povzayd](https://github.com/Spydomain) |
 
 ---
 
