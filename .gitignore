@@ -1,0 +1,30 @@
+# Large JAR binaries (users download via install script)
+burpsuite_pro_v*.jar
+
+# Java build artifacts
+*.class
+*.log
+hs_err_pid*
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Generated launcher (created by install scripts)
+burpsuitepro
+
+# Windows generated files
+Burp.bat
+Burp-Suite-Pro.vbs
+jdk-21.exe
+jre-8.exe
+
+# Nix
+result
