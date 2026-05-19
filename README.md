@@ -299,7 +299,7 @@ With `home.packages` (home-manager):
 |-----------|--------|
 | Loader.jar | [h3110w0r1d-y](https://github.com/h3110w0r1d-y/BurpLoaderKeygen) |
 | Original Script | [cyb3rzest](https://github.com/cyb3rzest/Burp-Suite-Pro) |
-| Spydomain | [povzayd](https://github.com/Spydomain) |
+| Spydomain | [povzayd](https://github.com/povzayd) |
 
 ---
 
