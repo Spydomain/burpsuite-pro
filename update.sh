@@ -2,7 +2,7 @@
 # ============================================================
 #  Spydomain — Burp Suite Professional Updater
 #  Auto-detects platform: Debian/Arch/macOS
-#  Repository: https://github.com/povzayd/Burpsuite-Professional
+#  Repository: https://github.com/Spydomain/burpsuite-pro
 # ============================================================
 
 set -e
@@ -62,11 +62,11 @@ REPO_DIR="${PARENT_DIR}/Spydomain"
 
 if [ -d "$REPO_DIR/.git" ]; then
     cd "$REPO_DIR"
-    git pull origin main
+    git pull origin master
 else
     cd "$PARENT_DIR"
-    git clone https://github.com/povzayd/Burpsuite-Professional.git Spydomain 2>/dev/null || \
-    git clone https://github.com/povzayd/Burpsuite-Professional.git
+    git clone https://github.com/Spydomain/burpsuite-pro.git Spydomain 2>/dev/null || \
+    git clone https://github.com/Spydomain/burpsuite-pro.git
     REPO_DIR="$(ls -td "${PARENT_DIR}"/Spydomain "${PARENT_DIR}"/Burpsuite-Professional 2>/dev/null | head -1)"
     cd "$REPO_DIR"
 fi
