@@ -2,7 +2,7 @@
 # ============================================================
 #  Spydomain — Burp Suite Professional Installer
 #  Platform: macOS (Intel + Apple Silicon)
-#  Repository: https://github.com/povzayd/Burpsuite-Professional
+#  Repository: https://github.com/Spydomain/burpsuite-pro
 # ============================================================
 
 set -e
