@@ -65,10 +65,14 @@ URL="https://portswigger-cdn.net/burp/releases/download?product=pro&type=Jar"
 if [ -f "$JAR_FILE" ]; then
     SIZE=$(du -h "$JAR_FILE" | awk '{print $1}')
     echo -e "  ${GREEN}✓${NC} JAR already exists: $(basename "$JAR_FILE") (${SIZE})"
-    read -rp "  Re-download latest? [y/N]: " redownload
-    if [[ "$redownload" =~ ^[Yy]$ ]]; then
-        rm -f "$JAR_FILE"
-        axel "$URL" -o "$JAR_FILE"
+    if [ -t 0 ]; then
+        read -rp "  Re-download latest? [y/N]: " redownload
+        if [[ "$redownload" =~ ^[Yy]$ ]]; then
+            rm -f "$JAR_FILE"
+            axel "$URL" -o "$JAR_FILE"
+        fi
+    else
+        echo -e "  ${CYAN}ℹ${NC}  Skipping re-download (piped mode)."
     fi
 else
     axel "$URL" -o "$JAR_FILE"
