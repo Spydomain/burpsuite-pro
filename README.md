@@ -33,7 +33,7 @@
 ### 🐧 Debian / Ubuntu / Kali Linux
 
 ```bash
-sudo apt update && sudo apt install -y wget && wget -qO- https://github.com/Spydomain/burpsuite-pro/blob/master/install.sh | sudo bash
+sudo apt update && sudo apt install -y wget && wget -qO- https://raw.githubusercontent.com/Spydomain/burpsuite-pro/master/install.sh | sudo bash
 ```
 
 Or clone & run:
@@ -128,7 +128,7 @@ chmod +x update.sh && ./update.sh
 
 Or one-liner:
 ```bash
-wget -qO- https://github.com/Spydomain/burpsuite-pro/main/update.sh | sudo bash
+wget -qO- sudo apt update && sudo apt install -y wget && wget -qO- https://raw.githubusercontent.com/Spydomain/burpsuite-pro/master/update.sh | sudo bash
 ```
 
 ---
