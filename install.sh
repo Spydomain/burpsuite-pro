@@ -1,11 +1,11 @@
 #!/bin/bash
 # ============================================================
 #  Spydomain — Burp Suite Professional Installer
-#  Platform: Debian / Ubuntu / Kali Linux
+#  Platform: Debian / Ubuntu / Kali Linux (amd64 + arm64 + armhf)
 #  Repository: https://github.com/Spydomain/burpsuite-pro
 # ============================================================
 
-set -e
+set -euo pipefail
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -23,6 +23,11 @@ echo "  ║       Spydomain — Burp Suite Pro Installer       ║"
 echo "  ║            Debian / Ubuntu / Kali Linux          ║"
 echo "  ╚══════════════════════════════════════════════════╝"
 echo -e "${NC}"
+
+# ── Detect architecture ──────────────────────────────────────
+ARCH=$(dpkg --print-architecture 2>/dev/null || echo "unknown")
+UNAME_ARCH=$(uname -m)
+echo -e "  ${CYAN}ℹ${NC}  Detected arch: ${BOLD}${ARCH}${NC} (${UNAME_ARCH})"
 
 # ── Detect run mode (piped vs local) and set INSTALL_DIR ─────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}" 2>/dev/null)" && pwd 2>/dev/null || pwd)"
@@ -46,20 +51,40 @@ fi
 
 # ── 1. Install Dependencies ──────────────────────────────────
 echo -e "${YELLOW}[1/5]${NC} Installing dependencies..."
-sudo apt update
-sudo apt install -y git axel wget openjdk-21-jre openjdk-21-jdk
+sudo apt-get update -qq
+sudo apt-get install -y git axel wget openjdk-21-jre openjdk-21-jdk
 
 # ── 2. Set Java 21 as default ────────────────────────────────
 echo -e "${YELLOW}[2/5]${NC} Setting Java 21 as default..."
-JAVA21_PATH="/usr/lib/jvm/java-21-openjdk-amd64/bin/java"
-if [ -f "$JAVA21_PATH" ]; then
-    sudo update-alternatives --set java "$JAVA21_PATH" 2>/dev/null || true
-    echo -e "  ${GREEN}✓${NC} Java 21 set as default"
-else
-    echo -e "  ${YELLOW}⚠${NC} Java 21 path not found at expected location, trying update-alternatives..."
-    sudo update-alternatives --config java
+
+# Build the expected path using dpkg architecture
+JAVA21_PATH="/usr/lib/jvm/java-21-openjdk-${ARCH}/bin/java"
+
+# Fallback 1: search by uname architecture mapping
+if [ ! -f "$JAVA21_PATH" ]; then
+    case "$UNAME_ARCH" in
+        x86_64)   JAVA21_PATH="/usr/lib/jvm/java-21-openjdk-amd64/bin/java" ;;
+        aarch64)  JAVA21_PATH="/usr/lib/jvm/java-21-openjdk-arm64/bin/java" ;;
+        armv7l)   JAVA21_PATH="/usr/lib/jvm/java-21-openjdk-armhf/bin/java" ;;
+        i686)     JAVA21_PATH="/usr/lib/jvm/java-21-openjdk-i386/bin/java"  ;;
+        *)        JAVA21_PATH="" ;;
+    esac
 fi
-java -version 2>&1 | head -1
+
+# Fallback 2: brute-force find any java-21 binary
+if [ -z "$JAVA21_PATH" ] || [ ! -f "$JAVA21_PATH" ]; then
+    JAVA21_PATH=$(find /usr/lib/jvm -path "*/java-21-*/bin/java" -type f 2>/dev/null | head -1 || true)
+fi
+
+if [ -n "$JAVA21_PATH" ] && [ -f "$JAVA21_PATH" ]; then
+    sudo update-alternatives --set java "$JAVA21_PATH" 2>/dev/null || true
+    echo -e "  ${GREEN}✓${NC} Java 21 set as default (${JAVA21_PATH})"
+else
+    echo -e "  ${YELLOW}⚠${NC} Java 21 binary not found — skipping alternatives config."
+    echo -e "  ${YELLOW}⚠${NC} Please run: sudo update-alternatives --config java"
+fi
+
+java -version 2>&1 | head -1 || true
 
 # ── 3. Download Burp Suite Professional JAR ──────────────────
 echo -e "${YELLOW}[3/5]${NC} Downloading Burp Suite Professional (latest)..."
@@ -69,10 +94,15 @@ URL="https://portswigger-cdn.net/burp/releases/download?product=pro&type=Jar"
 if [ -f "$JAR_FILE" ]; then
     SIZE=$(du -h "$JAR_FILE" | cut -f1)
     echo -e "  ${GREEN}✓${NC} JAR already exists: $(basename "$JAR_FILE") (${SIZE})"
-    read -rp "  Re-download latest? [y/N]: " redownload
-    if [[ "$redownload" =~ ^[Yy]$ ]]; then
-        rm -f "$JAR_FILE"
-        axel "$URL" -o "$JAR_FILE"
+    # Skip interactive prompt when running via pipe (stdin is not a terminal)
+    if [ -t 0 ]; then
+        read -rp "  Re-download latest? [y/N]: " redownload
+        if [[ "$redownload" =~ ^[Yy]$ ]]; then
+            rm -f "$JAR_FILE"
+            axel "$URL" -o "$JAR_FILE"
+        fi
+    else
+        echo -e "  ${CYAN}ℹ${NC}  Skipping re-download (piped mode). Delete the JAR manually to force re-download."
     fi
 else
     axel "$URL" -o "$JAR_FILE"
@@ -84,14 +114,14 @@ echo -e "${YELLOW}[4/5]${NC} Creating launcher script..."
 cat > "${INSTALL_DIR}/burpsuitepro" << EOF
 #!/bin/bash
 # Spydomain — Burp Suite Professional Launcher
-java \
-    --add-opens=java.desktop/javax.swing=ALL-UNNAMED \
-    --add-opens=java.base/java.lang=ALL-UNNAMED \
-    --add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED \
-    --add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED \
-    --add-opens=java.base/jdk.internal.org.objectweb.asm.Opcodes=ALL-UNNAMED \
-    -javaagent:${INSTALL_DIR}/loader.jar \
-    -noverify \
+java \\
+    --add-opens=java.desktop/javax.swing=ALL-UNNAMED \\
+    --add-opens=java.base/java.lang=ALL-UNNAMED \\
+    --add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED \\
+    --add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED \\
+    --add-opens=java.base/jdk.internal.org.objectweb.asm.Opcodes=ALL-UNNAMED \\
+    -javaagent:${INSTALL_DIR}/loader.jar \\
+    -noverify \\
     -jar ${INSTALL_DIR}/burpsuite_pro_v${VERSION}.jar &
 EOF
 
