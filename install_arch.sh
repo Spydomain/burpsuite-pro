@@ -2,7 +2,7 @@
 # ============================================================
 #  Spydomain — Burp Suite Professional Installer
 #  Platform: Arch Linux / CachyOS / Manjaro (Wayland + X11)
-#  Repository: https://github.com/povzayd/Burpsuite-Professional
+#  Repository: https://github.com/Spydomain/burpsuite-pro
 # ============================================================
 
 set -e
