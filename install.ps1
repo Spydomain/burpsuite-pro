@@ -1,7 +1,7 @@
 # ============================================================
 #  Spydomain — Burp Suite Professional Installer
 #  Platform: Windows (PowerShell)
-#  Repository: https://github.com/povzayd/Burpsuite-Professional
+#  Repository: https://github.com/Spydomain/burpsuite-pro
 # ============================================================
 
 Write-Host ""
