@@ -2,7 +2,7 @@
 # ============================================================
 #  Spydomain — Burp Suite Professional Installer
 #  Platform: Debian / Ubuntu / Kali Linux
-#  Repository: https://github.com/povzayd/Burpsuite-Professional
+#  Repository: https://github.com/Spydomain/burpsuite-pro
 # ============================================================
 
 set -e
@@ -14,7 +14,7 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-INSTALL_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_URL="https://github.com/Spydomain/burpsuite-pro.git"
 VERSION=2025
 
 echo -e "${CYAN}"
@@ -23,6 +23,26 @@ echo "  ║       Spydomain — Burp Suite Pro Installer       ║"
 echo "  ║            Debian / Ubuntu / Kali Linux          ║"
 echo "  ╚══════════════════════════════════════════════════╝"
 echo -e "${NC}"
+
+# ── Detect run mode (piped vs local) and set INSTALL_DIR ─────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}" 2>/dev/null)" && pwd 2>/dev/null || pwd)"
+
+if [ -f "${SCRIPT_DIR}/loader.jar" ]; then
+    # Running from cloned repo directory
+    INSTALL_DIR="$SCRIPT_DIR"
+else
+    # Running via pipe (wget ... | bash) — need to clone the repo
+    INSTALL_DIR="/opt/Spydomain"
+    echo -e "${YELLOW}[*]${NC} Piped install detected — cloning repository to ${INSTALL_DIR}..."
+    sudo mkdir -p "$INSTALL_DIR"
+    if [ -d "${INSTALL_DIR}/.git" ]; then
+        echo -e "  ${GREEN}✓${NC} Repository already exists, pulling latest..."
+        sudo git -C "$INSTALL_DIR" pull --ff-only || true
+    else
+        sudo git clone "$REPO_URL" "$INSTALL_DIR"
+    fi
+    echo -e "  ${GREEN}✓${NC} Repository ready at ${INSTALL_DIR}"
+fi
 
 # ── 1. Install Dependencies ──────────────────────────────────
 echo -e "${YELLOW}[1/5]${NC} Installing dependencies..."
