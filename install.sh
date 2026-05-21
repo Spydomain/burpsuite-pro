@@ -78,27 +78,60 @@ else
     axel "$URL" -o "$JAR_FILE"
 fi
 
-# ── 4. Create launcher script ────────────────────────────────
+# ── 4. Create launcher script & register 'burpsuitepro' command ─
 echo -e "${YELLOW}[4/5]${NC} Creating launcher script..."
 
 cat > "${INSTALL_DIR}/burpsuitepro" << EOF
 #!/bin/bash
 # Spydomain — Burp Suite Professional Launcher
-java \\
-    --add-opens=java.desktop/javax.swing=ALL-UNNAMED \\
-    --add-opens=java.base/java.lang=ALL-UNNAMED \\
-    --add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED \\
-    --add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED \\
-    --add-opens=java.base/jdk.internal.org.objectweb.asm.Opcodes=ALL-UNNAMED \\
-    -javaagent:${INSTALL_DIR}/loader.jar \\
-    -noverify \\
+java \
+    --add-opens=java.desktop/javax.swing=ALL-UNNAMED \
+    --add-opens=java.base/java.lang=ALL-UNNAMED \
+    --add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED \
+    --add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED \
+    --add-opens=java.base/jdk.internal.org.objectweb.asm.Opcodes=ALL-UNNAMED \
+    -javaagent:${INSTALL_DIR}/loader.jar \
+    -noverify \
     -jar ${INSTALL_DIR}/burpsuite_pro_v${VERSION}.jar &
 EOF
 
 chmod +x "${INSTALL_DIR}/burpsuitepro"
-sudo cp "${INSTALL_DIR}/burpsuitepro" /usr/local/bin/burpsuitepro 2>/dev/null || \
-sudo cp "${INSTALL_DIR}/burpsuitepro" /bin/burpsuitepro
-echo -e "  ${GREEN}✓${NC} Command 'burpsuitepro' installed globally"
+
+# ── Register 'burpsuitepro' as a global command ──────────────
+echo -e "${YELLOW}  [+]${NC} Adding 'burpsuitepro' to system PATH..."
+
+# Remove stale copies/symlinks first
+sudo rm -f /usr/local/bin/burpsuitepro /bin/burpsuitepro 2>/dev/null || true
+
+# Prefer symlink so future updates propagate automatically
+if sudo ln -sf "${INSTALL_DIR}/burpsuitepro" /usr/local/bin/burpsuitepro 2>/dev/null; then
+    LINK_TARGET="/usr/local/bin/burpsuitepro"
+elif sudo ln -sf "${INSTALL_DIR}/burpsuitepro" /bin/burpsuitepro 2>/dev/null; then
+    LINK_TARGET="/bin/burpsuitepro"
+else
+    # Last resort: copy the file
+    sudo cp "${INSTALL_DIR}/burpsuitepro" /usr/local/bin/burpsuitepro 2>/dev/null || \
+    sudo cp "${INSTALL_DIR}/burpsuitepro" /bin/burpsuitepro
+    LINK_TARGET="/usr/local/bin/burpsuitepro"
+fi
+
+# Verify the command is reachable in the current PATH
+if command -v burpsuitepro &>/dev/null; then
+    echo -e "  ${GREEN}✓${NC} Command 'burpsuitepro' is now available globally"
+else
+    # /usr/local/bin may not be in PATH for some minimal shells — add it
+    PROFILE_LINE='export PATH="/usr/local/bin:$PATH"  # Spydomain – burpsuitepro'
+    for RC_FILE in "$HOME/.bashrc" "$HOME/.zshrc"; do
+        if [ -f "$RC_FILE" ] && ! grep -qF 'burpsuitepro' "$RC_FILE"; then
+            echo "" >> "$RC_FILE"
+            echo "$PROFILE_LINE" >> "$RC_FILE"
+            echo -e "  ${CYAN}→${NC} Added PATH entry to $(basename $RC_FILE)"
+        fi
+    done
+    echo -e "  ${GREEN}✓${NC} Command 'burpsuitepro' installed (restart your shell or run: source ~/.bashrc)"
+fi
+
+echo -e "  ${CYAN}ℹ${NC}  Usage: just type ${BOLD}burpsuitepro${NC} from any terminal to launch"
 
 # ── 5. Create desktop entry ──────────────────────────────────
 echo -e "${YELLOW}[5/5]${NC} Creating desktop entry..."
