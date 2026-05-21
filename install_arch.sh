@@ -76,8 +76,12 @@ echo -e "  ${GREEN}✓${NC} Active Java: ${JAVA_VER}"
 if ! java -version 2>&1 | grep -q '"21'; then
     echo -e "  ${RED}⚠ WARNING:${NC} Java version does not appear to be 21!"
     echo -e "  Run: ${CYAN}sudo archlinux-java set java-21-openjdk${NC}"
-    read -rp "  Continue anyway? [y/N]: " cont
-    [[ ! "$cont" =~ ^[Yy]$ ]] && exit 1
+    if [ -t 0 ]; then
+        read -rp "  Continue anyway? [y/N]: " cont
+        [[ ! "$cont" =~ ^[Yy]$ ]] && exit 1
+    else
+        echo -e "  ${YELLOW}⚠${NC} Continuing anyway (piped mode)..."
+    fi
 fi
 
 # ── 3. Download Burp Suite Professional JAR ──────────────────
@@ -88,10 +92,14 @@ URL="https://portswigger-cdn.net/burp/releases/download?product=pro&type=Jar"
 if [ -f "$JAR_FILE" ]; then
     SIZE=$(du -h "$JAR_FILE" | cut -f1)
     echo -e "  ${GREEN}✓${NC} JAR already exists: $(basename "$JAR_FILE") (${SIZE})"
-    read -rp "  Re-download latest? [y/N]: " redownload
-    if [[ "$redownload" =~ ^[Yy]$ ]]; then
-        rm -f "$JAR_FILE"
-        axel "$URL" -o "$JAR_FILE"
+    if [ -t 0 ]; then
+        read -rp "  Re-download latest? [y/N]: " redownload
+        if [[ "$redownload" =~ ^[Yy]$ ]]; then
+            rm -f "$JAR_FILE"
+            axel "$URL" -o "$JAR_FILE"
+        fi
+    else
+        echo -e "  ${CYAN}ℹ${NC}  Skipping re-download (piped mode)."
     fi
 else
     axel "$URL" -o "$JAR_FILE"
@@ -190,8 +198,11 @@ echo "    4. Copy Response from Loader → paste into Burp"
 echo "    5. Click Activate"
 echo ""
 
-read -rp "Launch Burp Suite now? [Y/n]: " launch
-if [[ ! "$launch" =~ ^[Nn]$ ]]; then
+LAUNCH="y"
+if [ -t 0 ]; then
+    read -rp "Launch Burp Suite now? [Y/n]: " LAUNCH
+fi
+if [[ ! "$LAUNCH" =~ ^[Nn]$ ]]; then
     echo -e "${CYAN}[*] Starting Loader keygen...${NC}"
     (java -jar "${INSTALL_DIR}/loader.jar") &
     sleep 2
